@@ -3,5 +3,5 @@
     path: "{{ item }}"
   register: artifacts_stats
   with_items:
-    - "/tmp/container-data-backup/{{ container_name }}.tar.gz"
-    - "/var/log/backup-{{ container_name }}.log"
+    - "{{ backup_archive_path }}"
+    - "{{ cronjob_log }}"
