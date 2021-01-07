@@ -5,15 +5,14 @@
   when: docker_volume_name is defined and docker_volume_name is not none
 
 - import_tasks: script.yml
+- import_tasks: commandline.yml
 
 - name: Register docker volume backup job
   cron:
-    name: "Backup job {{ item.id }}"
-    hour: "{{ item.hour }}"
-    minute: "{{ item.minute | default(59 | random(seed=item.id)) }}"
-    job: "{{ item.cli }}"
-    disabled: "{{ item.disabled | default(false) }}"
-    state: "{{ item.state | default('present') }}"
-  with_items:
-    - "{{ docker_volume_backup_cron_job }}"
+    name: "Backup job {{ docker_volume_backup_cron_job_id }}"
+    hour: "{{ docker_volume_backup_hour }}"
+    minute: "{{ docker_volume_backup_minute | default(59 | random(seed=docker_volume_backup_cron_job_id)) }}"
+    job: "{{ docker_volume_script_cmdline }} >> {{ docker_volume_backup_cron_job_logfile }} 2>&1"
+    disabled: "{{ docker_volume_backup_cron_job_disabled | default(false) }}"
+    state: "{{ docker_volume_backup_cron_job_state | default('present') }}"
   when: docker_volume_for_container is defined and docker_volume_backup_dirs | length > 0
