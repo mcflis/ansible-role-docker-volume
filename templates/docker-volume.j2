@@ -2,13 +2,26 @@
 
 set -e
 
+host_backup_dir={{ docker_volume_host_backup_dir }}
+
+die() { echo "$*" >&2; exit 2; }  # complain to STDERR and exit with error
+
+while getopts d:-: OPT; do
+  # taken from (and adapted): https://stackoverflow.com/a/28466267/519360
+  case "$OPT" in
+    d )    host_backup_dir=$([ "$OPTARG" != "${OPTARG#/}" ] && echo "$OPTARG" || echo "$(pwd)/$OPTARG") ;;
+    ??* )  die "Illegal option --$OPT" ;;  # bad long option
+    ? )    exit 2 ;;  # bad short option (error reported via getopts)
+  esac
+done
+shift $((OPTIND-1)) # remove parsed options and args from $@ list
+
 command=$1
 commands=(
   backup
   restore
   help
 )
-host_backup_dir={{ docker_volume_host_backup_dir }}
 container_backup_dir=/backup
 container_name="$2"
 container_data_dirs=("${@:3}")
@@ -25,11 +38,18 @@ docker_args=(
 )
 
 help() {
-  echo -e "usage: $(basename "$0") <command> <container-name> <container-data-dirs>\n"
-  echo -e "example: $(basename "$0") backup my-container data/dir/1 data/dir/2"
-  printf "\tDo not use leading forward slashes when specifying container-data-dirs\n\n"
-  printf "commands:\n"
-  printf "\t%s\n" "${commands[@]}"
+  cat <<-END
+usage: $(basename "$0") [OPTS] <command> <container-name> <container-data-dirs>
+
+options:
+  -d    specifies where backup archives are located on the host, default: "$host_backup_dir"
+
+commands:
+$(printf "  %s\n" "${commands[@]}")
+
+example: $(basename "$0") backup my-container data/dir/1 data/dir/2
+  Do not use leading forward slashes when specifying container-data-dirs
+END
 }
 
 # backup files from a docker volume into a compressed archive
@@ -78,5 +98,5 @@ if ! printf '%s\n' "${commands[@]}" | grep -q "^${command}$"; then
   exit 1
 fi
 
-mkdir -p $host_backup_dir
+mkdir -p "$host_backup_dir"
 "$command" "$container_name" "${container_data_dirs[@]}"
