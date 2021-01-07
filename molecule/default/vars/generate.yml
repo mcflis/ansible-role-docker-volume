@@ -1,2 +1,0 @@
-converge_vars_file: converge.yml
-converge_vars_filepath: "{{ playbook_dir }}/generated_vars/{{ converge_vars_file }}"
