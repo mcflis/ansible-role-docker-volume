@@ -1,0 +1,9 @@
+---
+- name: Build commandline
+  set_fact:
+    docker_volume_script_cmdline: >-
+      {{ docker_volume_script }}
+      {{ docker_volume_script_opts | join(' ') }}
+      {{ docker_volume_script_cmd }}
+      {{ docker_volume_for_container }}
+      {{ docker_volume_backup_dirs | join(' ') }}

@@ -1,0 +1,13 @@
+---
+- import_tasks: script.yml
+
+- import_tasks: commandline.yml
+  vars:
+    docker_volume_script_cmd: restore
+
+# TODO: fix
+#       setting changed_when to false to pass idempotence check because we don't have a way to check if data needs to be
+#       restored, so we run the command always.
+- name: Restore data
+  command: "{{ docker_volume_script_cmdline }}"
+  changed_when: false
