@@ -1,0 +1,26 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: no
+  vars:
+    expected_checksum: "4c34ae0662eb299ba024f9d68eed6e2ff813a6a1"
+    configuration_yaml_path: "{{ archive_dir }}/configuration.yaml"
+  vars_files:
+    - vars/converge.yml
+  tasks:
+    # always run this task to ensure it is freshly copied from the container
+    - name: "Extract file from container '{{ container_name }}'"
+      command: "docker cp {{ container_name }}:/config/configuration.yaml {{ configuration_yaml_path }}"
+      changed_when: false
+
+    - name: "Get checksum of my {{ configuration_yaml_path }}"
+      stat:
+        path: "{{ configuration_yaml_path }}"
+      register: file
+
+    - debug:
+        var: file.stat.checksum
+
+    - name: "Expect that checksums match for {{ configuration_yaml_path }}"
+      assert:
+        that: expected_checksum == file.stat.checksum
