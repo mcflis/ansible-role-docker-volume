@@ -1,0 +1,28 @@
+---
+- name: Instance Cleanup
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - vars/converge.yml
+  tasks:
+    - block:
+      - name: Wait for containers to be up
+        wait_for_connection:
+          timeout: 1
+
+      - name: "Remove {{ archive_dir }}"
+        file:
+          path: "{{ archive_dir }}"
+          state: absent
+      - name: Remove container
+        docker_container:
+          name: "{{ docker_volume_for_container }}"
+          state: absent
+      - name: Remove volume
+        docker_volume:
+          name: "{{ docker_volume_name }}"
+          state: absent
+      rescue:
+        - name: Rescue
+          debug:
+            msg: 'Could not cleanup instance. Checkout output above this line for more details.'

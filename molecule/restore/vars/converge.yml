@@ -1,0 +1,10 @@
+container_image: alpine
+container_name: "{{ container_image }}-restore-container"
+container_command: "tail -f /dev/null"
+archive_dir: /restore
+archive_path: "{{ archive_dir }}/{{ container_name }}.tar.gz"
+
+docker_volume_name: "{{ container_name }}-data"
+docker_volume_for_container: "{{ container_name }}"
+docker_volume_backup_dirs:
+  - config

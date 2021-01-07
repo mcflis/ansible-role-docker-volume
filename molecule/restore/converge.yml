@@ -1,0 +1,34 @@
+---
+- name: Converge
+  hosts: all
+  vars_files:
+    - vars/converge.yml
+  pre_tasks:
+    - name: "Ensure {{ archive_dir }} exists"
+      file:
+        path: "{{ archive_dir }}"
+        state: directory
+        mode: 0755
+
+    - name: Upload archive to instance
+      copy:
+        src: files/data.tar.gz
+        dest: "{{ archive_path }}"
+        mode: 0666
+
+    - name: "Create container"
+      docker_container:
+        command: "{{ container_command }}"
+        image: "{{ container_image }}"
+        name: "{{ container_name }}"
+        state: started
+        volumes:
+          - "{{ docker_volume_name }}:/{{ docker_volume_backup_dirs[0] }}"
+
+  tasks:
+    - import_role:
+        name: ansible-role-docker_volume
+        tasks_from: restore
+      vars:
+        docker_volume_script_opts:
+          - "-d {{ archive_dir }}"
