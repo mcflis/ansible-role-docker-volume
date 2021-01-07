@@ -3,37 +3,7 @@
   hosts: all
   vars_files:
     - vars/converge.yml
-    - vars/generate.yml
   pre_tasks:
-    - name: Stat converge vars file
-      delegate_to: localhost
-      stat:
-        path: "{{ converge_vars_filepath }}"
-      register: converge_vars
-
-    - block:
-        - name: Ensure generated converge vars dir is created
-          file:
-            path: "{{ converge_vars_filepath | dirname }}"
-            mode: 0755
-            state: directory
-            recurse: yes
-        - name: Create converge vars
-          template:
-            src: "{{ playbook_dir }}/templates/converge_vars.yml.j2"
-            dest: "{{ converge_vars_filepath }}"
-            mode: 0666
-      delegate_to: localhost
-      when: not converge_vars.stat.exists
-
-    - name: Load converge config from generated vars file
-      include_vars:
-        file: "{{ converge_vars_filepath }}"
-
-  roles:
-    - ansible-role-docker_volume
-
-  post_tasks:
     - name: "Create container"
       docker_container:
         command: "{{ container_command }}"
@@ -42,3 +12,6 @@
         state: started
         volumes:
           - "{{ docker_volume_name }}:/{{ docker_volume_backup_dirs[0] }}"
+
+  roles:
+    - ansible-role-docker_volume
