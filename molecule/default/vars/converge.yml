@@ -1,11 +1,14 @@
 container_image: alpine
 container_name: "{{ container_image }}-container"
 container_command: "tail -f /dev/null"
-crontime_minutes_offset: 2
 
 docker_volume_name: "{{ container_image }}-data"
 docker_volume_for_container: "{{ container_name }}"
+docker_volume_host_backup_dir: /backups
 docker_volume_backup_dirs:
   - data
-docker_volume_backup_hour: "{{ ansible_date_time.hour | int }}"
-docker_volume_backup_minute: "{{ ansible_date_time.minute | int + crontime_minutes_offset | int }}"
+docker_volume_backup_hour: "*"
+docker_volume_backup_minute: "*"
+
+backup_archive_path: "{{ docker_volume_host_backup_dir }}/{{ container_name }}.tar.gz"
+cronjob_log: "/var/log/backup-{{ container_name }}.log"
