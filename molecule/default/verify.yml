@@ -1,21 +1,30 @@
 ---
 - name: Verify
   hosts: all
-  gather_facts: false
+  gather_facts: no
   vars_files:
-    - generated_vars/converge.yml
+    - vars/converge.yml
   tasks:
-    - name: "Wait for container '{{ container_name }}' to stop"
+    - name: Waiting for backup archive to become present
+      wait_for:
+        path: "{{ backup_archive_path }}"
+        timeout: 120
+      register: time
+
+    - name: "Get stats for {{ cronjob_log }}"
+      stat:
+        path: "{{ cronjob_log }}"
+      register: logfile
+
+    - name: "Expect that cron job log file exists after waiting for archive {{ time.elapsed }} second(s)"
+      assert:
+        that: logfile.stat.exists
+
+    - name: "Expect container '{{ container_name }}' to run"
       docker_container_info:
         name: "{{ container_name }}"
       register: inst
-      retries: "{{ 60 * crontime_minutes_offset | int }}"
+      retries: 120
       delay: 1
-      until: not inst.exists or not inst.container.State.Running
-      failed_when: not inst.exists or inst.container.State.Running
-
-    - include_tasks: tasks/artifacts_stats.yml
-    - name: Expect that files exist
-      assert:
-        that: item.stat.exists
-      with_items: "{{ artifacts_stats.results }}"
+      until: inst.exists and inst.container.State.Running
+      failed_when: not inst.exists or not inst.container.State.Running
