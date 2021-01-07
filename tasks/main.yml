@@ -4,13 +4,7 @@
     name: "{{ docker_volume_name }}"
   when: docker_volume_name is defined and docker_volume_name is not none
 
-- name: Copy backup/restore scripts
-  template:
-    src: docker-volume.j2
-    dest: "{{ item }}"
-    mode: +x
-  loop:
-    - "{{ docker_volume_executable.bin }}"
+- import_tasks: script.yml
 
 - name: Register docker volume backup job
   cron:

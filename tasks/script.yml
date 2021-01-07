@@ -1,0 +1,6 @@
+---
+- name: Copy backup/restore script
+  template:
+    src: docker-volume.j2
+    dest: "{{ docker_volume_script }}"
+    mode: +x

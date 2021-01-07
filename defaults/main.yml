@@ -19,15 +19,21 @@ docker_volume_backup_minute:
 # path to the directory where docker volume data should be stored
 docker_volume_host_backup_dir: /tmp/container-data-backup
 
-docker_volume_executable:
-  bin: /usr/local/bin/docker-volume
-  command: backup
-  container: "{{ docker_volume_for_container }}"
-  dirs: "{{ docker_volume_backup_dirs }}"
-  logfile: "/var/log/backup-{{ docker_volume_for_container }}.log"
+# one of the commands supported by the executable script
+docker_volume_script_cmd: backup
 
+# a list of options to provide to the executable script
+docker_volume_script_opts: []
+
+# script path on the remote
+docker_volume_script: /usr/local/bin/docker-volume
+
+# default commandline for interaction with script
+docker_volume_script_cmdline: "{{ docker_volume_script }} {{ docker_volume_script_cmd }} {{ docker_volume_for_container }} {{ docker_volume_backup_dirs | join(' ') }}"
+
+docker_volume_backup_cron_job_logfile: "/var/log/backup-{{ docker_volume_for_container }}.log"
 docker_volume_backup_cron_job:
   id: "backup-{{ docker_volume_for_container }}"
   hour: "{{ docker_volume_backup_hour }}"
   minute: "{{ docker_volume_backup_minute }}"
-  cli: "{{ docker_volume_executable.bin }} {{ docker_volume_executable.command }} {{ docker_volume_executable.container }} {{ docker_volume_executable.dirs | join(' ') }} >> {{ docker_volume_executable.logfile }} 2>&1"
+  cli: "{{ docker_volume_script_cmdline }} >> {{ docker_volume_backup_cron_job_logfile }} 2>&1"
