@@ -29,7 +29,6 @@
     - snapshots.files | default([]) | length > 1
 
 - name: Get stats of potential snapshot directories
-  become: yes
   stat:
     path: "{{ item }}"
   register: stat
