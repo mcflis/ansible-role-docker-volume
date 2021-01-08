@@ -4,7 +4,7 @@ container_command: "tail -f /dev/null"
 archive_dir: /restore
 archive_path: "{{ archive_dir }}/{{ container_name }}.tar.gz"
 
-docker_volume_snapshots_base: "{{ archive_dir }}"
+docker_volume_snapshots_base_dir: "{{ archive_dir }}"
 docker_volume_snapshot_name:
 docker_volume_name: "{{ container_name }}-data"
 docker_volume_for_container: "{{ container_name }}"

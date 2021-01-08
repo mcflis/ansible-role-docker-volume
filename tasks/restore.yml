@@ -1,16 +1,16 @@
 ---
 - import_tasks: script.yml
 
-- name: "Find {{ docker_volume_snapshot_name | default('*', true) }} in {{ docker_volume_snapshots_base }}"
+- name: "Find {{ docker_volume_snapshot_name | default('*', true) }} in {{ docker_volume_snapshots_base_dir }}"
   become: yes
   find:
-    paths: "{{ docker_volume_snapshots_base }}"
+    paths: "{{ docker_volume_snapshots_base_dir }}"
     patterns: "{{ docker_volume_snapshot_name }}"
     recurse: yes
   register: snapshots
   when:
     - not docker_volume_snapshot_dir
-    - docker_volume_snapshots_base is defined
+    - docker_volume_snapshots_base_dir is defined
     - docker_volume_snapshot_name is defined
 
 - name: Check snapshot count

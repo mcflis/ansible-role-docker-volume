@@ -23,7 +23,7 @@ docker_volume_host_backup_dir: /tmp/container-data-backup
 docker_volume_names: []
 
 # base directory for search of potential snapshots
-docker_volume_snapshots_base: "{{ docker_volume_host_backup_dir }}"
+docker_volume_snapshots_base_dir: "{{ docker_volume_host_backup_dir }}"
 # snapshot dir, useful when you manually want to define the parent directory of a snapshot
 docker_volume_snapshot_dir:
 #docker_volume_snapshot_name: "{{ docker_volume_for_container }}.tar.gz"
