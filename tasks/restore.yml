@@ -1,13 +1,62 @@
 ---
 - import_tasks: script.yml
 
+- name: "Find {{ docker_volume_snapshot_name | default('*', true) }} in {{ docker_volume_snapshots_base }}"
+  become: yes
+  find:
+    paths: "{{ docker_volume_snapshots_base }}"
+    patterns: "{{ docker_volume_snapshot_name }}"
+    recurse: yes
+  register: snapshots
+  when:
+    - not docker_volume_snapshot_dir
+    - docker_volume_snapshots_base is defined
+    - docker_volume_snapshot_name is defined
+
+- name: Check snapshot count
+  fail:
+    msg: |
+      Could not resolve snapshot because the count is not equal to 1!
+
+      Results of file search:
+      {{ snapshots.files | map(attribute='path') | list | to_nice_yaml }}
+      You can define what snapshot should be restored by setting these vars manually:
+      - docker_volume_snapshot_dir
+      - docker_volume_snapshot_name (by default it will use docker_volume_for_container)
+  when:
+    - not snapshots.skipped | default(false)
+    - snapshots.files | default([]) | length != 0
+    - snapshots.files | default([]) | length > 1
+
+- name: Get stats of potential snapshot directories
+  become: yes
+  stat:
+    path: "{{ item }}"
+  register: stat
+  with_items:
+    - "{{ docker_volume_snapshot_dir }}"
+    - "{{ (snapshots.files | default([]) | first).path | default('') | dirname }}"
+    - "{{ docker_volume_host_backup_dir }}"
+
+- name: Select first existing snapshot directory
+  set_fact:
+    snapshot_dir: "{{ stat.results | selectattr('stat.exists', 'equalto', true) | map(attribute='stat.path') | list | first }}"
+
 - import_tasks: commandline.yml
   vars:
     docker_volume_script_cmd: restore
+    docker_volume_script_opts:
+      - "-d {{ snapshot_dir }}"
 
 # TODO: fix
 #       setting changed_when to false to pass idempotence check because we don't have a way to check if data needs to be
 #       restored, so we run the command always.
-- name: Restore data
+- name: "Restore data from {{ snapshot_dir }}/{{ docker_volume_snapshot_name }} for container '{{ docker_volume_for_container }}'"
   command: "{{ docker_volume_script_cmdline }}"
+  register: restore_result
   changed_when: false
+
+- name: Result of data restoration
+  debug:
+    verbosity: 1
+    var: restore_result
