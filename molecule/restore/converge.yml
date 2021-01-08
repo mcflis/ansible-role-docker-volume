@@ -29,6 +29,3 @@
     - import_role:
         name: ansible-role-docker_volume
         tasks_from: restore
-      vars:
-        docker_volume_script_opts:
-          - "-d {{ archive_dir }}"
