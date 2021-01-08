@@ -19,6 +19,16 @@ docker_volume_backup_minute:
 # path to the directory where docker volume data should be stored
 docker_volume_host_backup_dir: /tmp/container-data-backup
 
+# names of volumes from a container that should be removed before restoring a snapshot
+docker_volume_names: []
+
+# base directory for search of potential snapshots
+docker_volume_snapshots_base: "{{ docker_volume_host_backup_dir }}"
+# snapshot dir, useful when you manually want to define the parent directory of a snapshot
+docker_volume_snapshot_dir:
+#docker_volume_snapshot_name: "{{ docker_volume_for_container }}.tar.gz"
+docker_volume_snapshot_name: "{{ docker_volume_for_container }}.tar.gz"
+
 # one of the commands supported by the executable script
 docker_volume_script_cmd: backup
 
